@@ -328,3 +328,13 @@ func test_losing_on_last_day_is_not_a_win() -> void:
 	run.end_day()
 	assert_true(run.is_lost)
 	assert_false(run.is_won)
+
+
+func test_checks_passed_counter() -> void:
+	run.intellect = 60
+	_end_day_with([&"lab"])
+	_end_day_with([&"exam", &"study_group"])
+	assert_eq(run.checks_passed, 2)
+	run.intellect = 10
+	_end_day_with([&"lab"])
+	assert_eq(run.checks_passed, 2, "failed checks don't count")

@@ -41,6 +41,11 @@ extends Resource
 ## Intellect has no maximum; this is the value that fills the intellect bar.
 @export var intellect_display_max: int = 0
 
+@export_group("Debug")
+## -1 = a new random schedule every run. Any other value replays the same
+## schedule every run. The --seed=N command-line argument overrides this.
+@export var debug_seed: int = -1
+
 @export_group("Content")
 @export var cards: Array[CardData] = []
 @export var events: Array[EventData] = []

@@ -27,6 +27,10 @@ var loss_reason: String = ""
 var schedule: Schedule
 ## Seed that generated this run's schedule (reuse it to replay the run).
 var rng_seed: int = 0
+## True when the seed was supplied rather than rolled.
+var seed_was_fixed: bool = false
+## Stat checks passed so far this run.
+var checks_passed: int = 0
 
 
 ## Pass `run_schedule` to use a fixed schedule (tests); otherwise one is
@@ -39,7 +43,8 @@ func _init(game_config: GameConfig, run_schedule: Schedule = null, seed_value: i
 	gloom = maxi(config.start_gloom, 0)
 	# Pick the seed explicitly: after randomize(), rng.seed doesn't report a
 	# value that reproduces the sequence.
-	rng_seed = seed_value if seed_value >= 0 else randi()
+	seed_was_fixed = seed_value >= 0
+	rng_seed = seed_value if seed_was_fixed else randi()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
 	schedule = run_schedule if run_schedule != null else Schedule.generate(config, rng)
@@ -110,6 +115,8 @@ func end_day() -> Dictionary:
 			continue
 		var actual := _stat_value(event.check_stat)
 		var passed := actual >= event.check_min
+		if passed:
+			checks_passed += 1
 		result.checks.append({
 			"event": event, "stat": event.check_stat,
 			"required": event.check_min, "actual": actual, "passed": passed,

@@ -53,7 +53,7 @@ func test_initial_display() -> void:
 	assert_eq(screen.gloom_bar.value, 20)
 	assert_eq(screen.gloom_bar.marker, 80, "lockout line marked on gloom bar")
 	assert_eq(screen.streak_label.text, "Study streak: 0")
-	assert_false(screen.status_label.visible)
+	assert_false(screen.game_over_overlay.visible)
 	assert_false(screen.end_day_button.disabled)
 
 
@@ -109,8 +109,8 @@ func test_full_run_ends_in_win() -> void:
 	for i in screen.config.num_days:
 		screen.end_day_button.pressed.emit()
 	assert_true(screen.run.is_won)
-	assert_true(screen.status_label.visible)
-	assert_string_contains(screen.status_label.text, "WIN")
+	assert_true(screen.game_over_overlay.visible, "no events on day 14: win screen right away")
+	assert_true(screen.game_over_overlay.is_win)
 	assert_true(screen.end_day_button.disabled)
 	for button: CardButton in screen.card_buttons:
 		assert_true(button.disabled)
@@ -255,3 +255,89 @@ func test_restart_rolls_a_new_schedule() -> void:
 		checks += screen.run.schedule.visible_on(d).size()
 	assert_eq(checks, 5, "2 exams + 3 labs")
 	await wait_process_frames(1)
+
+
+# --- Milestone 5: win screen, restart, debug seed -------------------------------
+
+## Fresh screen whose config has the given debug seed (set before _ready).
+func _screen_with_seed(seed_value: int) -> MainScreen:
+	var cfg := (load("res://data/GameConfig.tres") as GameConfig).duplicate() as GameConfig
+	cfg.debug_seed = seed_value
+	var other := (load("res://scenes/main.tscn") as PackedScene).instantiate() as MainScreen
+	other.config = cfg
+	add_child_autofree(other)
+	return other
+
+
+func test_win_after_final_exam_popup() -> void:
+	_use_schedule({4: [&"lab"], 14: [&"exam"]})
+	screen.run.intellect = 60
+	for i in screen.config.num_days:
+		screen.end_day_button.pressed.emit()
+		if screen.event_popup.visible:
+			assert_false(screen.game_over_overlay.visible, "end screen waits for the popup")
+			screen.event_popup.continue_button.pressed.emit()
+	var over := screen.game_over_overlay
+	assert_true(screen.run.is_won)
+	assert_true(over.visible)
+	assert_eq(over.title_label.text, "YOU WIN!")
+	assert_string_contains(over.reason_label.text, "all 14 days")
+	assert_string_contains(over.summary_label.text, "Exams and labs passed: 2")
+	assert_eq(over.restart_button.text, "Play again")
+	assert_string_contains(over.seed_label.text, "Seed %d" % screen.run.rng_seed)
+
+
+func test_play_again_after_win() -> void:
+	for i in screen.config.num_days:
+		screen.end_day_button.pressed.emit()
+	screen.game_over_overlay.restart_button.pressed.emit()
+	assert_false(screen.game_over_overlay.visible)
+	assert_false(screen.run.is_over())
+	assert_eq(screen.day_label.text, "Day 1 / 14")
+	assert_false(screen.end_day_button.disabled)
+	await wait_process_frames(1)
+
+
+func test_loss_screen_after_win_screen_is_restyled() -> void:
+	for i in screen.config.num_days:
+		screen.end_day_button.pressed.emit()
+	screen.game_over_overlay.restart_button.pressed.emit()
+	_use_schedule({})
+	screen.run.gloom = 100
+	screen.end_day_button.pressed.emit()
+	assert_false(screen.game_over_overlay.is_win)
+	assert_eq(screen.game_over_overlay.title_label.text, "GAME OVER")
+	assert_eq(screen.game_over_overlay.restart_button.text, "Restart")
+	await wait_process_frames(1)
+
+
+func test_random_seed_by_default() -> void:
+	assert_eq(screen.config.debug_seed, -1)
+	assert_false(screen.run.seed_was_fixed)
+
+
+func test_debug_seed_from_config_repeats_schedule_on_restart() -> void:
+	var fixed := _screen_with_seed(4242)
+	assert_eq(fixed.run.rng_seed, 4242)
+	assert_true(fixed.run.seed_was_fixed)
+	assert_string_contains(fixed.log_label.text, "fixed seed 4242")
+	var first := fixed.run.schedule
+	fixed.run.gloom = 100
+	fixed.run.schedule = Schedule.new()  # make sure day 1 just loses
+	fixed.end_day_button.pressed.emit()
+	assert_string_contains(fixed.game_over_overlay.seed_label.text, "Seed 4242 (fixed)")
+	fixed.game_over_overlay.restart_button.pressed.emit()
+	assert_eq(fixed.run.rng_seed, 4242)
+	var reference := RunState.new(fixed.config, null, 4242).schedule
+	for d in range(1, fixed.config.num_days + 1):
+		assert_eq(fixed.run.schedule.events_on(d), reference.events_on(d), "day %d" % d)
+	assert_ne(first, fixed.run.schedule, "restart builds a new (identical) schedule")
+	await wait_process_frames(1)
+
+
+func test_parse_seed_arg() -> void:
+	assert_eq(MainScreen.parse_seed_arg(PackedStringArray()), -1)
+	assert_eq(MainScreen.parse_seed_arg(PackedStringArray(["--seed=123"])), 123)
+	assert_eq(MainScreen.parse_seed_arg(PackedStringArray(["--foo", "--seed=0"])), 0)
+	assert_eq(MainScreen.parse_seed_arg(PackedStringArray(["--seed=abc"])), -1)
+	assert_eq(MainScreen.parse_seed_arg(PackedStringArray(["--seed=-5"])), -1)

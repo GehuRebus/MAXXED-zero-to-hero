@@ -21,10 +21,17 @@ godot --headless -s addons/gut/gut_cmdln.gd -gexit
 ```
 Or open the GUT panel in the editor.
 
+## Debug: replay a run with a fixed seed
+Every run's schedule (exam/lab days and surprise events) comes from one seed, shown on the game-over and win screens.
+- Command line: `godot --path . -- --seed=12345`
+- Or in the editor: set `debug_seed` in `data/GameConfig.tres` (Debug group). `-1` = random every run.
+
+With a fixed seed, Restart / Play again replays the same schedule.
+
 ## Status
 - [x] Milestone 1 — skeleton, data resources, RunState rules + tests
 - [x] Milestone 2 — playable day (stat display, cards, energy, End Day)
 - [x] Milestone 3 — rules UI (streak, lockout, game over + restart)
 - [x] Milestone 4 — events & schedule (lookahead strip, hidden surprises, results popup)
-- [ ] Milestone 5 — full run
+- [x] Milestone 5 — full run (win screen, play again, debug seed)
 - [ ] Milestone 6 — tuning & playtest

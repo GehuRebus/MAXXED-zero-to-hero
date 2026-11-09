@@ -17,7 +17,6 @@ var card_buttons: Array[CardButton] = []
 @onready var gloom_bar: StatBar = %GloomBar
 @onready var lock_label: Label = %LockLabel
 @onready var log_label: Label = %LogLabel
-@onready var status_label: Label = %StatusLabel
 @onready var card_row: HBoxContainer = %CardRow
 @onready var end_day_button: Button = %EndDayButton
 @onready var game_over_overlay: GameOverOverlay = %GameOverOverlay
@@ -35,8 +34,26 @@ func _ready() -> void:
 	start_run()
 
 
+## Seed from a `--seed=N` user argument (after `--` on the command line),
+## or -1 if there isn't a valid one.
+static func parse_seed_arg(args: PackedStringArray) -> int:
+	for arg in args:
+		if arg.begins_with("--seed="):
+			var value := arg.trim_prefix("--seed=")
+			if value.is_valid_int() and value.to_int() >= 0:
+				return value.to_int()
+			push_warning("Ignoring invalid %s (expected a whole number >= 0)." % arg)
+	return -1
+
+
+## -1 means "roll a random seed".
+func fixed_seed() -> int:
+	var from_cli := parse_seed_arg(OS.get_cmdline_user_args())
+	return from_cli if from_cli >= 0 else config.debug_seed
+
+
 func start_run() -> void:
-	run = RunState.new(config)
+	run = RunState.new(config, null, fixed_seed())
 	run.changed.connect(refresh)
 	game_over_overlay.hide()
 	event_popup.hide()
@@ -44,6 +61,8 @@ func start_run() -> void:
 	_build_cards()
 	_build_energy_pips()
 	log_label.text = "Day 1. Kimmy has %d energy. Click a card to spend it." % run.energy
+	if run.seed_was_fixed:
+		log_label.text += " [debug: fixed seed %d]" % run.rng_seed
 	refresh()
 
 
@@ -91,8 +110,8 @@ func _on_end_day_pressed() -> void:
 	if not (result.events as Array).is_empty():
 		_pending_result = result
 		event_popup.show_result(result)
-	elif run.is_lost:
-		game_over_overlay.show_loss(run, result)
+	elif run.is_over():
+		_show_end_screen(result)
 
 	if run.is_lost:
 		log_label.text = "Day %d ended." % finished_day
@@ -106,9 +125,16 @@ func _on_end_day_pressed() -> void:
 
 
 func _on_event_popup_closed() -> void:
-	if run.is_lost and not _pending_result.is_empty():
-		game_over_overlay.show_loss(run, _pending_result)
+	if run.is_over() and not _pending_result.is_empty():
+		_show_end_screen(_pending_result)
 	_pending_result = {}
+
+
+func _show_end_screen(result: Dictionary) -> void:
+	if run.is_won:
+		game_over_overlay.show_win(run)
+	else:
+		game_over_overlay.show_loss(run, result)
 
 
 func refresh() -> void:
@@ -140,7 +166,3 @@ func refresh() -> void:
 		button.refresh(run)
 
 	end_day_button.disabled = run.is_over()
-	# Losses get the game-over overlay; the win screen is milestone 5.
-	status_label.visible = run.is_won
-	if run.is_won:
-		status_label.text = "YOU WIN! Kimmy made it through all %d days." % config.num_days
