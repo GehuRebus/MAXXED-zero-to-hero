@@ -15,6 +15,8 @@ const TAG_BLOCKED_BY_GLOOM: StringName = &"blocked_by_gloom"
 ## playing it extends the study streak. Any other card resets the streak.
 @export var uses_study_streak: bool = false
 @export var tags: Array[StringName] = []
+## Placeholder art: the card is drawn as a solid block of this color.
+@export var color: Color = Color.GRAY
 
 
 func has_tag(tag: StringName) -> bool:

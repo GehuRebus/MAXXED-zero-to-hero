@@ -24,6 +24,7 @@ func test_config_values() -> void:
 	assert_eq(config.gloom_loss_threshold, 100)
 	assert_eq(config.intellect_loss_threshold, 0)
 	assert_eq(config.study_streak_percent, [100, 110, 120] as Array[int])
+	assert_gt(config.intellect_display_max, 0)
 
 
 func test_config_lists_all_content() -> void:

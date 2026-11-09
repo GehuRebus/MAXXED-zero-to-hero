@@ -1,5 +1,8 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/ui/main_screen.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/ui/stat_bar.gd" id="2_bar"]
+
 [node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -7,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_main")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -17,17 +21,142 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.16, 0.18, 0.24, 1)
 
-[node name="Label" type="Label" parent="."]
+[node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "MAXXED! College Zero to Hero!
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
 
-Milestone 1: game logic only.
-Run the GUT tests to exercise RunState."
+[node name="Layout" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TopBar" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="DayLabel" type="Label" parent="Margin/Layout/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "Day 1 / 14"
+
+[node name="Spacer" type="Control" parent="Margin/Layout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnergyTitle" type="Label" parent="Margin/Layout/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Energy"
+
+[node name="EnergyPips" type="HBoxContainer" parent="Margin/Layout/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="Spacer2" type="Control" parent="Margin/Layout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StreakLabel" type="Label" parent="Margin/Layout/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Study streak: 0"
+
+[node name="Middle" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 32
+
+[node name="Kimmy" type="ColorRect" parent="Margin/Layout/Middle"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+color = Color(0.9, 0.6, 0.35, 1)
+
+[node name="KimmyLabel" type="Label" parent="Margin/Layout/Middle/Kimmy"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 28
+text = "KIMMY"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Stats" type="VBoxContainer" parent="Margin/Layout/Middle"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="IntellectBar" type="Control" parent="Margin/Layout/Middle/Stats"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+script = ExtResource("2_bar")
+title = "Intellect"
+fill_color = Color(0.3, 0.55, 0.95, 1)
+
+[node name="GloomBar" type="Control" parent="Margin/Layout/Middle/Stats"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+script = ExtResource("2_bar")
+title = "Gloom"
+fill_color = Color(0.55, 0.3, 0.65, 1)
+
+[node name="MarkerGap" type="Control" parent="Margin/Layout/Middle/Stats"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="LockLabel" type="Label" parent="Margin/Layout/Middle/Stats"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+
+[node name="LogLabel" type="Label" parent="Margin/Layout/Middle/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+
+[node name="StatusLabel" type="Label" parent="Margin/Layout"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Bottom" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="CardRow" type="HBoxContainer" parent="Margin/Layout/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="EndDayButton" type="Button" parent="Margin/Layout/Bottom"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 28
+text = "End Day"

@@ -10,3 +10,4 @@ description = "Go out. Feels great, but you forget things."
 energy_cost = 1
 intellect_delta = -7
 gloom_delta = -11
+color = Color(0.8, 0.35, 0.6, 1)

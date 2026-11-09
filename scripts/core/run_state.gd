@@ -38,14 +38,15 @@ func is_over() -> bool:
 	return is_lost or is_won
 
 
-## Empty string means the card can be played.
+## Empty string means the card can be played. The gloom lock is reported
+## before "no energy" because it's the more useful thing to tell the player.
 func block_reason(card: CardData) -> String:
 	if is_over():
 		return REASON_RUN_OVER
-	if energy < card.energy_cost:
-		return REASON_NO_ENERGY
 	if locked and card.has_tag(CardData.TAG_BLOCKED_BY_GLOOM):
 		return REASON_GLOOM_LOCK % config.gloom_lockout_threshold
+	if energy < card.energy_cost:
+		return REASON_NO_ENERGY
 	return ""
 
 

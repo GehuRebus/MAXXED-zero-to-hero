@@ -26,6 +26,10 @@ extends Resource
 ## Applied as (base * percent) / 100 with integer division (rounds down).
 @export var study_streak_percent: Array[int] = []
 
+@export_group("Presentation")
+## Intellect has no maximum; this is the value that fills the intellect bar.
+@export var intellect_display_max: int = 0
+
 @export_group("Content")
 @export var cards: Array[CardData] = []
 @export var events: Array[EventData] = []

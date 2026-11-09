@@ -170,6 +170,16 @@ func test_lockout_design_example() -> void:
 	assert_true(run.can_play(party), "Party is never locked")
 
 
+func test_lock_reason_wins_over_no_energy() -> void:
+	run.gloom = 85
+	run.end_day()
+	for i in 3:
+		run.play_card(party)
+	assert_eq(run.energy, 0)
+	assert_string_contains(run.block_reason(study), "gloom")
+	assert_eq(run.block_reason(game), RunState.REASON_NO_ENERGY)
+
+
 func test_lockout_starts_at_threshold() -> void:
 	run.gloom = 79
 	run.end_day()

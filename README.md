@@ -9,6 +9,7 @@ Built with **Godot 4.7.2** (GDScript, static typing).
 - `data/cards/`, `data/events/` — `CardData` / `EventData` resources
 - `scripts/core/run_state.gd` — all game rules, no UI (unit-tested)
 - `scripts/data/` — resource class definitions
+- `scripts/ui/` — day screen (`main_screen.gd`), card buttons, stat bars; reads RunState, holds no rules
 - `tests/unit/` — GUT tests
 - `addons/gut/` — vendored [GUT](https://github.com/bitwes/Gut) 9.7.1
 
@@ -21,7 +22,7 @@ Or open the GUT panel in the editor.
 
 ## Status
 - [x] Milestone 1 — skeleton, data resources, RunState rules + tests
-- [ ] Milestone 2 — playable day
+- [x] Milestone 2 — playable day (stat display, cards, energy, End Day)
 - [ ] Milestone 3 — rules UI (streak, lockout, game over)
 - [ ] Milestone 4 — events & schedule
 - [ ] Milestone 5 — full run

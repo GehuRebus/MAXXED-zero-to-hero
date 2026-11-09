@@ -9,3 +9,4 @@ display_name = "Game"
 description = "Unwind with some games. No drawback."
 energy_cost = 1
 gloom_delta = -6
+color = Color(0.25, 0.65, 0.4, 1)
