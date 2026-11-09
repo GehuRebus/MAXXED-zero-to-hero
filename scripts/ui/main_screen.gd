@@ -5,7 +5,12 @@ extends Control
 const PIP_FULL := Color(1, 0.85, 0.2, 1)
 const PIP_EMPTY := Color(0.25, 0.25, 0.28, 1)
 
-@export var config: GameConfig = preload("res://data/GameConfig.tres")
+const MENU_SCENE := "res://scenes/start_menu.tscn"
+
+## Leave empty to use the session config (which the debug menu edits).
+@export var config: GameConfig
+## Tests turn this off so the Menu buttons don't swap out the test scene.
+var navigate: bool = true
 
 var run: RunState
 var card_buttons: Array[CardButton] = []
@@ -22,12 +27,17 @@ var card_buttons: Array[CardButton] = []
 @onready var game_over_overlay: GameOverOverlay = %GameOverOverlay
 @onready var event_popup: EventPopup = %EventPopup
 @onready var schedule_strip: ScheduleStrip = %ScheduleStrip
+@onready var menu_button: Button = %MenuButton
 
 ## end_day() result waiting for the event popup to close.
 var _pending_result: Dictionary = {}
 
 
 func _ready() -> void:
+	if config == null:
+		config = GameSession.config()
+	menu_button.pressed.connect(go_to_menu)
+	game_over_overlay.menu_requested.connect(go_to_menu)
 	end_day_button.pressed.connect(_on_end_day_pressed)
 	game_over_overlay.restart_requested.connect(start_run)
 	event_popup.closed.connect(_on_event_popup_closed)
@@ -122,6 +132,11 @@ func _on_end_day_pressed() -> void:
 			finished_day, run.day, run.energy]
 		if run.locked:
 			log_label.text += " Kimmy is too gloomy to study today."
+
+
+func go_to_menu() -> void:
+	if navigate:
+		get_tree().change_scene_to_file(MENU_SCENE)
 
 
 func _on_event_popup_closed() -> void:

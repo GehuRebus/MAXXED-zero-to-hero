@@ -4,6 +4,7 @@ extends Control
 ## offers a restart.
 
 signal restart_requested
+signal menu_requested
 
 const LOSE_COLOR := Color(1, 0.45, 0.4, 1)
 const WIN_COLOR := Color(0.45, 0.9, 0.5, 1)
@@ -14,12 +15,14 @@ const WIN_COLOR := Color(0.45, 0.9, 0.5, 1)
 @onready var summary_label: Label = %SummaryLabel
 @onready var seed_label: Label = %SeedLabel
 @onready var restart_button: Button = %RestartButton
+@onready var menu_button: Button = %MainMenuButton
 
 var is_win: bool = false
 
 
 func _ready() -> void:
 	restart_button.pressed.connect(func() -> void: restart_requested.emit())
+	menu_button.pressed.connect(func() -> void: menu_requested.emit())
 	hide()
 
 
