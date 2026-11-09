@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_a4640"]
+
+[resource]
+script = ExtResource("1_a4640")
+id = &"lab"
+display_name = "Lab"
+description = "Intellect check, then the stress adds gloom."
+kind = 0
+check_min = 35
+gloom_delta = 10

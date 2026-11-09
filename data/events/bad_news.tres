@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_t41o8"]
+
+[resource]
+script = ExtResource("1_t41o8")
+id = &"bad_news"
+display_name = "Bad News From Home"
+description = "A call from home. It's not good."
+gloom_delta = 12

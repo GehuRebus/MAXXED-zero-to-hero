@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_evjap"]
+
+[resource]
+script = ExtResource("1_evjap")
+id = &"exam"
+display_name = "Exam"
+description = "Intellect check. Fail and the run is over."
+kind = 0
+check_min = 50

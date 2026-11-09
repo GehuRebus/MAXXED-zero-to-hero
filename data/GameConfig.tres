@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="GameConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_data.gd" id="1_tq7i0"]
+[ext_resource type="Resource" path="res://data/cards/study.tres" id="2_k4bh0"]
+[ext_resource type="Resource" path="res://data/cards/game.tres" id="3_c6e22"]
+[ext_resource type="Resource" path="res://data/cards/party.tres" id="4_mdi13"]
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="5_3c8xx"]
+[ext_resource type="Resource" path="res://data/events/exam.tres" id="6_aqgjp"]
+[ext_resource type="Resource" path="res://data/events/lab.tres" id="7_0gbpe"]
+[ext_resource type="Resource" path="res://data/events/study_group.tres" id="8_h15xo"]
+[ext_resource type="Resource" path="res://data/events/bad_news.tres" id="9_l8s26"]
+[ext_resource type="Script" path="res://scripts/data/game_config.gd" id="10_8po5q"]
+
+[resource]
+script = ExtResource("10_8po5q")
+num_days = 14
+start_energy = 3
+start_intellect = 20
+start_gloom = 20
+gloom_lockout_threshold = 80
+gloom_loss_threshold = 100
+study_streak_percent = Array[int]([100, 110, 120])
+cards = Array[ExtResource("1_tq7i0")]([ExtResource("2_k4bh0"), ExtResource("3_c6e22"), ExtResource("4_mdi13")])
+events = Array[ExtResource("5_3c8xx")]([ExtResource("6_aqgjp"), ExtResource("7_0gbpe"), ExtResource("8_h15xo"), ExtResource("9_l8s26")])

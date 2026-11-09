@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_data.gd" id="1_wr2v2"]
+
+[resource]
+script = ExtResource("1_wr2v2")
+id = &"study"
+display_name = "Study"
+description = "Hit the books. Back-to-back Study earns more intellect."
+energy_cost = 1
+intellect_delta = 10
+gloom_delta = 15
+uses_study_streak = true
+tags = Array[StringName]([&"blocked_by_gloom"])
