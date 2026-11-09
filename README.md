@@ -15,6 +15,7 @@ Built with **Godot 4.7.2** (GDScript, static typing).
 - `tests/unit/` — GUT tests (rule tests use `tests/test_fixtures.gd`, pinned to DESIGN.md's original numbers, so retuning doesn't break them)
 - `tools/sim/` — headless balance simulator
 - `docs/BALANCE.md` — tuning results and playtest checklist
+- `docs/DESIGN_DECISIONS.md` — every MVP design choice, its rationale and trade-offs, and how to improve it (with a roadmap)
 - `addons/gut/` — vendored [GUT](https://github.com/bitwes/Gut) 9.7.1
 
 ## Run the tests (headless)

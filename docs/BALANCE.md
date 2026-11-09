@@ -46,7 +46,7 @@ The skill gap (good vs pattern) went from 8 to 22 points, and the average loss m
 Card values and the Study streak are **unchanged**; the placeholders were enough.
 
 ### Why the first check moved to day 5
-With a demanding exam requirement, an exam on day 3–4 is out of reach for *any* strategy (from 20 intellect, gloom caps how much you can Study in 2–3 days). At day 3, about 60% of the good player's losses were these unwinnable early exams. That's bad luck, not tension. Day 5 gives enough runway to make the early game a planning problem instead.
+With a demanding exam requirement, an exam on day 3–4 is out of reach for *any* strategy (from 20 intellect, gloom caps how much you can Study in 2–3 days). At day 3, more than half of the good player's losses (63 of 114 in a 400-run sample) were these unwinnable early exams. That's bad luck, not tension. Day 5 gives enough runway to make the early game a planning problem instead.
 
 Even so, a day-5 exam needing 100 is still very tight. About 8% of runs are lost to an exam on exactly day 5, and some of those are probably unwinnable. If playtesters call that unfair, try `first_check_day = 6` or `exam check_min = 95`.
 
