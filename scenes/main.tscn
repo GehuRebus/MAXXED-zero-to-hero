@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/ui/main_screen.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/stat_bar.gd" id="2_bar"]
 [ext_resource type="PackedScene" path="res://scenes/game_over_overlay.tscn" id="3_over"]
+[ext_resource type="Script" path="res://scripts/ui/schedule_strip.gd" id="4_strip"]
+[ext_resource type="PackedScene" path="res://scenes/event_popup.tscn" id="5_popup"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -121,6 +123,17 @@ fill_color = Color(0.55, 0.3, 0.65, 1)
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
+[node name="UpcomingTitle" type="Label" parent="Margin/Layout/Middle/Stats"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Coming up (exams and labs; surprises are not shown):"
+
+[node name="ScheduleStrip" type="HBoxContainer" parent="Margin/Layout/Middle/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+script = ExtResource("4_strip")
+
 [node name="LockLabel" type="Label" parent="Margin/Layout/Middle/Stats"]
 unique_name_in_owner = true
 visible = false
@@ -161,6 +174,11 @@ layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 28
 text = "End Day"
+
+[node name="EventPopup" parent="." instance=ExtResource("5_popup")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
 
 [node name="GameOverOverlay" parent="." instance=ExtResource("3_over")]
 unique_name_in_owner = true

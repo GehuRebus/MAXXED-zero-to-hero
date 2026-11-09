@@ -24,14 +24,25 @@ var locked: bool = false
 var is_lost: bool = false
 var is_won: bool = false
 var loss_reason: String = ""
+var schedule: Schedule
+## Seed that generated this run's schedule (reuse it to replay the run).
+var rng_seed: int = 0
 
 
-func _init(game_config: GameConfig) -> void:
+## Pass `run_schedule` to use a fixed schedule (tests); otherwise one is
+## generated from `seed_value`, or from a random seed if it's negative.
+func _init(game_config: GameConfig, run_schedule: Schedule = null, seed_value: int = -1) -> void:
 	assert(game_config != null, "RunState needs a GameConfig")
 	config = game_config
 	energy = config.start_energy
 	intellect = maxi(config.start_intellect, 0)
 	gloom = maxi(config.start_gloom, 0)
+	# Pick the seed explicitly: after randomize(), rng.seed doesn't report a
+	# value that reproduces the sequence.
+	rng_seed = seed_value if seed_value >= 0 else randi()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = rng_seed
+	schedule = run_schedule if run_schedule != null else Schedule.generate(config, rng)
 
 
 func is_over() -> bool:
@@ -75,14 +86,16 @@ func play_card(card: CardData) -> bool:
 	return true
 
 
-## Resolves the day's events in DESIGN.md order, runs end-of-day checks, and
-## advances to the next day. Returns:
-## { day, checks: Array[Dictionary], effects: Array[Dictionary],
-##   lost, won, loss_reason }
+## Resolves today's scheduled events in DESIGN.md order, runs end-of-day
+## checks, and advances to the next day. Returns:
+## { day, events: Array[EventData], checks: Array[Dictionary],
+##   effects: Array[Dictionary], lost, won, loss_reason }
 ## Each check: { event, stat, required, actual, passed }.
-func end_day(events: Array[EventData] = []) -> Dictionary:
+## Each effect: { event, intellect, gloom }.
+func end_day() -> Dictionary:
+	var events := schedule.events_on(day)
 	var result := {
-		"day": day, "checks": [], "effects": [],
+		"day": day, "events": events, "checks": [], "effects": [],
 		"lost": false, "won": false, "loss_reason": "",
 	}
 	if is_over():

@@ -26,6 +26,17 @@ extends Resource
 ## Applied as (base * percent) / 100 with integer division (rounds down).
 @export var study_streak_percent: Array[int] = []
 
+@export_group("Schedule")
+## No stat checks are scheduled before this day.
+@export var first_check_day: int = 0
+## If set, this check is always on the last day (counts toward its count_per_run).
+@export var final_day_event: EventData
+## Random events per run, each drawn uniformly from the RANDOM events.
+## They are rolled at run start but stay hidden until they happen.
+@export var random_event_count: int = 0
+## The schedule strip shows today plus this many days ahead.
+@export var schedule_lookahead_days: int = 0
+
 @export_group("Presentation")
 ## Intellect has no maximum; this is the value that fills the intellect bar.
 @export var intellect_display_max: int = 0
@@ -39,6 +50,22 @@ func streak_percent(streak: int) -> int:
 	if study_streak_percent.is_empty() or streak <= 0:
 		return 100
 	return study_streak_percent[mini(streak, study_streak_percent.size()) - 1]
+
+
+func check_events() -> Array[EventData]:
+	var out: Array[EventData] = []
+	for event: EventData in events:
+		if event.is_check():
+			out.append(event)
+	return out
+
+
+func random_events() -> Array[EventData]:
+	var out: Array[EventData] = []
+	for event: EventData in events:
+		if not event.is_check():
+			out.append(event)
+	return out
 
 
 func get_card(card_id: StringName) -> CardData:

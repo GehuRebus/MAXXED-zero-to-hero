@@ -14,6 +14,9 @@ enum Stat { INTELLECT, GLOOM }
 ## Checks compare against the stat; they never spend it.
 @export var check_stat: Stat = Stat.INTELLECT
 @export var check_min: int = 0
+## STAT_CHECK only: how many times this event is scheduled per run.
+## (Random events are drawn from the pool; see GameConfig.random_event_count.)
+@export var count_per_run: int = 0
 ## Applied after all checks of the day are made.
 @export var intellect_delta: int = 0
 @export var gloom_delta: int = 0

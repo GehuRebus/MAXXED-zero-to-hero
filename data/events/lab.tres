@@ -8,5 +8,6 @@ id = &"lab"
 display_name = "Lab"
 description = "Intellect check, then the stress adds gloom."
 kind = 0
+count_per_run = 3
 check_min = 35
 gloom_delta = 10

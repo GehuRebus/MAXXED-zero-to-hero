@@ -11,17 +11,17 @@ var party: CardData
 
 func before_each() -> void:
 	config = load("res://data/GameConfig.tres") as GameConfig
-	run = RunState.new(config)
+	run = RunState.new(config, Schedule.new())  # empty: tests add events
 	study = config.get_card(&"study")
 	game = config.get_card(&"game")
 	party = config.get_card(&"party")
 
 
-func _events(ids: Array[StringName]) -> Array[EventData]:
-	var out: Array[EventData] = []
+## Schedules the given events on the current day, then ends the day.
+func _end_day_with(ids: Array[StringName]) -> Dictionary:
 	for id: StringName in ids:
-		out.append(config.get_event(id))
-	return out
+		run.schedule.add(run.day, config.get_event(id))
+	return run.end_day()
 
 
 # --- Start of run ---------------------------------------------------------
@@ -202,7 +202,7 @@ func test_lockout_lifts_when_gloom_drops() -> void:
 
 func test_lockout_uses_gloom_after_events() -> void:
 	run.gloom = 70
-	run.end_day(_events([&"bad_news"]))  # 70 + 12 = 82
+	_end_day_with([&"bad_news"])  # 70 + 12 = 82
 	assert_true(run.locked)
 
 
@@ -210,7 +210,7 @@ func test_lockout_uses_gloom_after_events() -> void:
 
 func test_exam_pass_and_result_shape() -> void:
 	run.intellect = 50
-	var result := run.end_day(_events([&"exam"]))
+	var result := _end_day_with([&"exam"])
 	assert_false(run.is_lost)
 	assert_eq(result.checks.size(), 1)
 	var check: Dictionary = result.checks[0]
@@ -221,7 +221,7 @@ func test_exam_pass_and_result_shape() -> void:
 
 func test_exam_fail_loses_run() -> void:
 	run.intellect = 49
-	var result := run.end_day(_events([&"exam"]))
+	var result := _end_day_with([&"exam"])
 	assert_true(run.is_lost)
 	assert_true(result.lost)
 	assert_false(result.checks[0].passed)
@@ -231,14 +231,14 @@ func test_exam_fail_loses_run() -> void:
 
 func test_checks_do_not_spend_stats() -> void:
 	run.intellect = 60
-	run.end_day(_events([&"exam"]))
+	_end_day_with([&"exam"])
 	assert_eq(run.intellect, 60)
 
 
 func test_lab_side_effect_applies_after_check() -> void:
 	run.intellect = 35
 	run.gloom = 20
-	run.end_day(_events([&"lab"]))
+	_end_day_with([&"lab"])
 	assert_false(run.is_lost)
 	assert_eq(run.gloom, 30)
 
@@ -246,7 +246,7 @@ func test_lab_side_effect_applies_after_check() -> void:
 func test_all_checks_use_end_of_day_stats_before_any_effect() -> void:
 	# Study Group's +8 intellect must not rescue a 45-intellect exam.
 	run.intellect = 45
-	run.end_day(_events([&"study_group", &"exam"]))
+	_end_day_with([&"study_group", &"exam"])
 	assert_true(run.is_lost)
 	assert_eq(run.intellect, 45, "no effects after a failed check")
 
@@ -254,7 +254,7 @@ func test_all_checks_use_end_of_day_stats_before_any_effect() -> void:
 func test_multiple_events_in_one_day() -> void:
 	run.intellect = 55
 	run.gloom = 20
-	var result := run.end_day(_events([&"exam", &"lab", &"study_group", &"bad_news"]))
+	var result := _end_day_with([&"exam", &"lab", &"study_group", &"bad_news"])
 	assert_false(run.is_lost)
 	assert_eq(result.checks.size(), 2)
 	assert_eq(run.intellect, 63)
@@ -263,9 +263,9 @@ func test_multiple_events_in_one_day() -> void:
 
 
 func test_random_events_apply() -> void:
-	run.end_day(_events([&"study_group"]))
+	_end_day_with([&"study_group"])
 	assert_eq([run.intellect, run.gloom], [28, 30])
-	run.end_day(_events([&"bad_news"]))
+	_end_day_with([&"bad_news"])
 	assert_eq([run.intellect, run.gloom], [28, 42])
 
 
@@ -293,7 +293,7 @@ func test_hundred_gloom_loses() -> void:
 
 func test_event_gloom_can_cause_loss() -> void:
 	run.gloom = 90
-	run.end_day(_events([&"bad_news"]))
+	_end_day_with([&"bad_news"])
 	assert_true(run.is_lost)
 
 

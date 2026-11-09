@@ -36,8 +36,10 @@ func _draw() -> void:
 		var x := size.x * clampf(float(marker) / float(max_value), 0.0, 1.0)
 		draw_line(Vector2(x, -6), Vector2(x, size.y + 6), marker_color, 4.0)
 		if not marker_label.is_empty():
-			draw_string(font, Vector2(x + 6, size.y + 20), marker_label,
-					HORIZONTAL_ALIGNMENT_LEFT, -1, 16, marker_color)
+			draw_string_outline(font, Vector2(x + 8, text_y), marker_label,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, 17, 5, Color(0, 0, 0, 0.85))
+			draw_string(font, Vector2(x + 8, text_y), marker_label,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, 17, marker_color)
 
 	draw_string(font, Vector2(12, text_y), "%s: %d" % [title, value],
 			HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)

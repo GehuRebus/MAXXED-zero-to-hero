@@ -92,10 +92,11 @@ All cost 1 energy, and all effects are permanent.
 - Mouse: click a card to play it; click "End Day" to end the day.
 
 ## Open questions
-**Need an answer before milestone 4 (events):**
-- How much of the schedule does the player see? All 14 days, just the next event, or the next few days?
-- Do random events also appear on the schedule ahead of time, or only reveal on the day?
-- Random-event frequency: roughly how many per run?
+**Decided for milestone 4 (events)** (all numbers in `GameConfig.tres`):
+- Schedule visibility: the player sees **today plus the next 3 days** (`schedule_lookahead_days`). The intellect bar also marks the next visible check's requirement.
+- Random events are **rolled at run start but hidden**; they show up as a "Surprise!" in the end-of-day popup.
+- Per run: **2 exams, 3 labs** (`count_per_run` on each event) and **3 random events** (`random_event_count`, each drawn evenly from Study Group / Bad News).
+- Placement: **day 14 is always an exam** (`final_day_event`, counts toward the 2); **no checks before day 3** (`first_check_day`); at most **one check per day**. Random events can land on any day, including check days.
 
 **Can wait until tuning:**
 - Starting intellect and gloom values.

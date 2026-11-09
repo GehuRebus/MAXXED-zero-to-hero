@@ -21,22 +21,30 @@ var card_buttons: Array[CardButton] = []
 @onready var card_row: HBoxContainer = %CardRow
 @onready var end_day_button: Button = %EndDayButton
 @onready var game_over_overlay: GameOverOverlay = %GameOverOverlay
+@onready var event_popup: EventPopup = %EventPopup
+@onready var schedule_strip: ScheduleStrip = %ScheduleStrip
+
+## end_day() result waiting for the event popup to close.
+var _pending_result: Dictionary = {}
 
 
 func _ready() -> void:
 	end_day_button.pressed.connect(_on_end_day_pressed)
 	game_over_overlay.restart_requested.connect(start_run)
+	event_popup.closed.connect(_on_event_popup_closed)
 	start_run()
 
 
 func start_run() -> void:
 	run = RunState.new(config)
-	run.changed.connect(_refresh)
+	run.changed.connect(refresh)
 	game_over_overlay.hide()
+	event_popup.hide()
+	_pending_result = {}
 	_build_cards()
 	_build_energy_pips()
 	log_label.text = "Day 1. Kimmy has %d energy. Click a card to spend it." % run.energy
-	_refresh()
+	refresh()
 
 
 func _build_cards() -> void:
@@ -80,9 +88,14 @@ func _on_card_pressed(card: CardData) -> void:
 func _on_end_day_pressed() -> void:
 	var finished_day := run.day
 	var result := run.end_day()
+	if not (result.events as Array).is_empty():
+		_pending_result = result
+		event_popup.show_result(result)
+	elif run.is_lost:
+		game_over_overlay.show_loss(run, result)
+
 	if run.is_lost:
 		log_label.text = "Day %d ended." % finished_day
-		game_over_overlay.show_loss(run, result)
 	elif run.is_won:
 		log_label.text = "Kimmy survived all %d days!" % config.num_days
 	else:
@@ -92,7 +105,13 @@ func _on_end_day_pressed() -> void:
 			log_label.text += " Kimmy is too gloomy to study today."
 
 
-func _refresh() -> void:
+func _on_event_popup_closed() -> void:
+	if run.is_lost and not _pending_result.is_empty():
+		game_over_overlay.show_loss(run, _pending_result)
+	_pending_result = {}
+
+
+func refresh() -> void:
 	day_label.text = "Day %d / %d" % [run.day, config.num_days]
 	streak_label.text = "Study streak: %d" % run.study_streak
 	if run.study_streak > 0:
@@ -102,7 +121,16 @@ func _refresh() -> void:
 	for i in pips.size():
 		(pips[i] as ColorRect).color = PIP_FULL if i < run.energy else PIP_EMPTY
 
-	intellect_bar.set_values(run.intellect, config.intellect_display_max)
+	var next_day := run.schedule.next_check_day(run.day,
+			mini(run.day + config.schedule_lookahead_days, config.num_days))
+	if next_day > 0 and not run.is_over():
+		var next_check := run.schedule.visible_on(next_day)[0]
+		var when := "today" if next_day == run.day else "day %d" % next_day
+		intellect_bar.set_values(run.intellect, config.intellect_display_max,
+				next_check.check_min, "%s %s: %d" % [next_check.display_name, when, next_check.check_min])
+	else:
+		intellect_bar.set_values(run.intellect, config.intellect_display_max)
+	schedule_strip.refresh(run)
 	gloom_bar.set_values(run.gloom, config.gloom_loss_threshold,
 			config.gloom_lockout_threshold, "lockout %d" % config.gloom_lockout_threshold)
 	lock_label.visible = run.locked and not run.is_over()

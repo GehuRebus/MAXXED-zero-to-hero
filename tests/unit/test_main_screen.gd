@@ -7,6 +7,21 @@ var screen: MainScreen
 func before_each() -> void:
 	screen = (load("res://scenes/main.tscn") as PackedScene).instantiate() as MainScreen
 	add_child_autofree(screen)
+	_use_schedule({})
+
+
+## Replaces the random schedule with a fixed one: { day: [event_id, ...] }.
+func _use_schedule(days: Dictionary) -> void:
+	var schedule := Schedule.new()
+	for d: int in days:
+		for id: StringName in days[d]:
+			schedule.add(d, screen.config.get_event(id))
+	screen.run.schedule = schedule
+	screen.refresh()
+
+
+func _cell_text(index: int) -> String:
+	return (screen.schedule_strip.get_child(index).get_child(0) as Label).text
 
 
 func _button(card_id: StringName) -> CardButton:
@@ -150,3 +165,93 @@ func test_restart_starts_a_fresh_run() -> void:
 	_button(&"game").pressed.emit()
 	assert_eq(screen.run.gloom, screen.config.start_gloom - 6, "new buttons drive the new run")
 	await wait_process_frames(1)  # let the old run's queue_free()d nodes go
+
+
+# --- Milestone 4: schedule and events -----------------------------------------
+
+func test_strip_shows_today_plus_lookahead() -> void:
+	assert_eq(screen.schedule_strip.shown_days, [1, 2, 3, 4] as Array[int])
+	screen.run.day = 13
+	screen.refresh()
+	assert_eq(screen.schedule_strip.shown_days, [13, 14] as Array[int], "stops at the last day")
+
+
+func test_strip_shows_checks_but_hides_random_events() -> void:
+	_use_schedule({2: [&"bad_news"], 3: [&"lab"], 4: [&"exam", &"study_group"]})
+	assert_string_contains(_cell_text(0), "Today")
+	assert_false(_cell_text(1).contains("Bad News"))
+	assert_string_contains(_cell_text(2), "Lab: intellect 35+")
+	assert_string_contains(_cell_text(3), "Exam: intellect 50+")
+	assert_false(_cell_text(3).contains("Study Group"))
+
+
+func test_strip_hides_checks_beyond_lookahead() -> void:
+	_use_schedule({6: [&"lab"]})
+	for i in screen.schedule_strip.get_child_count():
+		assert_false(_cell_text(i).contains("Lab"))
+	assert_eq(screen.intellect_bar.marker, -1, "no marker for a check out of view")
+
+
+func test_intellect_bar_marks_next_check() -> void:
+	_use_schedule({3: [&"lab"], 4: [&"exam"]})
+	assert_eq(screen.intellect_bar.marker, 35)
+	assert_string_contains(screen.intellect_bar.marker_label, "Lab day 3")
+
+
+func test_no_popup_on_uneventful_day() -> void:
+	screen.end_day_button.pressed.emit()
+	assert_false(screen.event_popup.visible)
+
+
+func test_passed_check_popup() -> void:
+	_use_schedule({1: [&"lab"]})
+	screen.run.intellect = 40
+	screen.end_day_button.pressed.emit()
+	assert_true(screen.event_popup.visible)
+	assert_string_contains(screen.event_popup.shown_lines[0], "needs intellect 35, Kimmy has 40: PASS")
+	assert_string_contains(screen.event_popup.shown_lines[1], "Lab: +10 gloom")
+	screen.event_popup.continue_button.pressed.emit()
+	assert_false(screen.event_popup.visible)
+	assert_false(screen.game_over_overlay.visible)
+	assert_eq(screen.day_label.text, "Day 2 / 14")
+
+
+func test_failed_check_popup_then_game_over() -> void:
+	_use_schedule({1: [&"exam"]})
+	screen.end_day_button.pressed.emit()
+	assert_true(screen.event_popup.visible)
+	assert_string_contains(screen.event_popup.shown_lines[0], "Kimmy has 20: FAIL")
+	assert_false(screen.game_over_overlay.visible, "game over waits for the popup")
+	screen.event_popup.continue_button.pressed.emit()
+	assert_true(screen.game_over_overlay.visible)
+	assert_string_contains(screen.game_over_overlay.reason_label.text, "Failed Exam")
+	assert_string_contains(screen.game_over_overlay.summary_label.text, "FAIL")
+
+
+func test_surprise_event_popup() -> void:
+	_use_schedule({1: [&"bad_news"]})
+	screen.end_day_button.pressed.emit()
+	assert_true(screen.event_popup.visible)
+	assert_eq(screen.event_popup.shown_lines, ["Surprise! Bad News From Home: +12 gloom"] as Array[String])
+	assert_eq(screen.gloom_bar.value, 32)
+
+
+func test_event_pushing_gloom_over_limit_ends_run_after_popup() -> void:
+	_use_schedule({1: [&"bad_news"]})
+	screen.run.gloom = 95
+	screen.end_day_button.pressed.emit()
+	assert_true(screen.event_popup.visible)
+	screen.event_popup.continue_button.pressed.emit()
+	assert_true(screen.game_over_overlay.visible)
+	assert_string_contains(screen.game_over_overlay.reason_label.text, "107 gloom")
+
+
+func test_restart_rolls_a_new_schedule() -> void:
+	screen.run.gloom = 100
+	screen.end_day_button.pressed.emit()
+	screen.game_over_overlay.restart_button.pressed.emit()
+	var checks := 0
+	for d in range(1, screen.config.num_days + 1):
+		checks += screen.run.schedule.visible_on(d).size()
+	assert_eq(checks, 5, "2 exams + 3 labs")
+	await wait_process_frames(1)

@@ -8,4 +8,5 @@ id = &"exam"
 display_name = "Exam"
 description = "Intellect check. Fail and the run is over."
 kind = 0
+count_per_run = 2
 check_min = 50
