@@ -20,16 +20,19 @@ var card_buttons: Array[CardButton] = []
 @onready var status_label: Label = %StatusLabel
 @onready var card_row: HBoxContainer = %CardRow
 @onready var end_day_button: Button = %EndDayButton
+@onready var game_over_overlay: GameOverOverlay = %GameOverOverlay
 
 
 func _ready() -> void:
 	end_day_button.pressed.connect(_on_end_day_pressed)
+	game_over_overlay.restart_requested.connect(start_run)
 	start_run()
 
 
 func start_run() -> void:
 	run = RunState.new(config)
 	run.changed.connect(_refresh)
+	game_over_overlay.hide()
 	_build_cards()
 	_build_energy_pips()
 	log_label.text = "Day 1. Kimmy has %d energy. Click a card to spend it." % run.energy
@@ -38,6 +41,7 @@ func start_run() -> void:
 
 func _build_cards() -> void:
 	for button: CardButton in card_buttons:
+		card_row.remove_child(button)
 		button.queue_free()
 	card_buttons.clear()
 	for card: CardData in config.cards:
@@ -75,9 +79,10 @@ func _on_card_pressed(card: CardData) -> void:
 
 func _on_end_day_pressed() -> void:
 	var finished_day := run.day
-	run.end_day()
+	var result := run.end_day()
 	if run.is_lost:
 		log_label.text = "Day %d ended." % finished_day
+		game_over_overlay.show_loss(run, result)
 	elif run.is_won:
 		log_label.text = "Kimmy survived all %d days!" % config.num_days
 	else:
@@ -100,15 +105,14 @@ func _refresh() -> void:
 	intellect_bar.set_values(run.intellect, config.intellect_display_max)
 	gloom_bar.set_values(run.gloom, config.gloom_loss_threshold,
 			config.gloom_lockout_threshold, "lockout %d" % config.gloom_lockout_threshold)
-	lock_label.visible = run.locked
+	lock_label.visible = run.locked and not run.is_over()
 	lock_label.text = "LOCKED: gloom was %d+ at the end of yesterday. Study is unavailable today." % config.gloom_lockout_threshold
 
 	for button: CardButton in card_buttons:
 		button.refresh(run)
 
 	end_day_button.disabled = run.is_over()
-	status_label.visible = run.is_over()
-	if run.is_lost:
-		status_label.text = "RUN OVER - %s" % run.loss_reason
-	elif run.is_won:
+	# Losses get the game-over overlay; the win screen is milestone 5.
+	status_label.visible = run.is_won
+	if run.is_won:
 		status_label.text = "YOU WIN! Kimmy made it through all %d days." % config.num_days

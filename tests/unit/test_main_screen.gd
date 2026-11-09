@@ -101,9 +101,52 @@ func test_full_run_ends_in_win() -> void:
 		assert_true(button.disabled)
 
 
-func test_stat_loss_shows_status() -> void:
+# --- Milestone 3: game over and restart ---------------------------------------
+
+func test_game_over_hidden_at_start() -> void:
+	assert_false(screen.game_over_overlay.visible)
+
+
+func test_gloom_loss_shows_game_over() -> void:
+	screen.run.gloom = 95
+	_button(&"study").pressed.emit()  # 110 gloom; still fine mid-day
+	assert_false(screen.game_over_overlay.visible, "losses wait for end of day")
+	screen.end_day_button.pressed.emit()
+	assert_true(screen.game_over_overlay.visible)
+	assert_eq(screen.game_over_overlay.title_label.text, "GAME OVER")
+	assert_string_contains(screen.game_over_overlay.reason_label.text, "gloom")
+	assert_string_contains(screen.game_over_overlay.summary_label.text, "day 1 of 14")
+	assert_true(screen.end_day_button.disabled)
+	for button: CardButton in screen.card_buttons:
+		assert_true(button.disabled)
+
+
+func test_intellect_loss_shows_game_over() -> void:
+	screen.run.intellect = 7
+	_button(&"party").pressed.emit()
+	screen.end_day_button.pressed.emit()
+	assert_true(screen.game_over_overlay.visible)
+	assert_string_contains(screen.game_over_overlay.reason_label.text, "intellect")
+	assert_string_contains(screen.game_over_overlay.summary_label.text, "Final intellect: 0")
+
+
+func test_restart_starts_a_fresh_run() -> void:
+	_button(&"study").pressed.emit()
 	screen.run.gloom = 100
 	screen.end_day_button.pressed.emit()
-	assert_true(screen.status_label.visible)
-	assert_string_contains(screen.status_label.text, "RUN OVER")
-	assert_true(screen.end_day_button.disabled)
+	var old_run := screen.run
+	screen.game_over_overlay.restart_button.pressed.emit()
+	assert_false(screen.game_over_overlay.visible)
+	assert_ne(screen.run, old_run)
+	assert_eq(screen.day_label.text, "Day 1 / 14")
+	assert_eq(screen.intellect_bar.value, screen.config.start_intellect)
+	assert_eq(screen.gloom_bar.value, screen.config.start_gloom)
+	assert_eq(_lit_pips(), screen.config.start_energy)
+	assert_eq(screen.streak_label.text, "Study streak: 0")
+	assert_false(screen.lock_label.visible)
+	assert_false(screen.end_day_button.disabled)
+	assert_eq(screen.card_buttons.size(), 3)
+	assert_eq(screen.card_row.get_child_count(), 3, "old buttons removed")
+	_button(&"game").pressed.emit()
+	assert_eq(screen.run.gloom, screen.config.start_gloom - 6, "new buttons drive the new run")
+	await wait_process_frames(1)  # let the old run's queue_free()d nodes go

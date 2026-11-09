@@ -9,7 +9,7 @@ const REASON_RUN_OVER := "The run is over."
 const REASON_NO_ENERGY := "No energy left today."
 const REASON_GLOOM_LOCK := "Too gloomy to study (gloom was %d+ at the end of yesterday)."
 const LOSS_INTELLECT := "Kimmy's intellect hit %d. She dropped out."
-const LOSS_GLOOM := "Kimmy's gloom reached %d. She gave up."
+const LOSS_GLOOM := "Kimmy ended the day at %d gloom (the limit is %d). She gave up."
 const LOSS_EVENT := "Failed %s: needed %s %d, had %d."
 
 var config: GameConfig
@@ -122,7 +122,7 @@ func end_day(events: Array[EventData] = []) -> Dictionary:
 		if intellect <= config.intellect_loss_threshold:
 			_lose(LOSS_INTELLECT % config.intellect_loss_threshold)
 		elif gloom >= config.gloom_loss_threshold:
-			_lose(LOSS_GLOOM % config.gloom_loss_threshold)
+			_lose(LOSS_GLOOM % [gloom, config.gloom_loss_threshold])
 
 	# 4. Advance.
 	study_streak = 0

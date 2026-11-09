@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/ui/main_screen.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/ui/stat_bar.gd" id="2_bar"]
+[ext_resource type="PackedScene" path="res://scenes/game_over_overlay.tscn" id="3_over"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -160,3 +161,8 @@ layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 28
 text = "End Day"
+
+[node name="GameOverOverlay" parent="." instance=ExtResource("3_over")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

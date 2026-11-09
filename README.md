@@ -23,7 +23,7 @@ Or open the GUT panel in the editor.
 ## Status
 - [x] Milestone 1 — skeleton, data resources, RunState rules + tests
 - [x] Milestone 2 — playable day (stat display, cards, energy, End Day)
-- [ ] Milestone 3 — rules UI (streak, lockout, game over)
+- [x] Milestone 3 — rules UI (streak, lockout, game over + restart)
 - [ ] Milestone 4 — events & schedule
 - [ ] Milestone 5 — full run
 - [ ] Milestone 6 — tuning & playtest
