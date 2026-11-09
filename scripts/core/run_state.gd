@@ -24,6 +24,8 @@ var locked: bool = false
 var is_lost: bool = false
 var is_won: bool = false
 var loss_reason: String = ""
+## Machine-readable cause: "intellect", "gloom", or the failed event's id.
+var loss_cause: String = ""
 var schedule: Schedule
 ## Seed that generated this run's schedule (reuse it to replay the run).
 var rng_seed: int = 0
@@ -48,6 +50,25 @@ func _init(game_config: GameConfig, run_schedule: Schedule = null, seed_value: i
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
 	schedule = run_schedule if run_schedule != null else Schedule.generate(config, rng)
+
+
+## Cheap copy sharing config and schedule, for "what if" planning (the
+## balance simulator). Signals are not copied.
+func copy() -> RunState:
+	var c := RunState.new(config, schedule, rng_seed)
+	c.seed_was_fixed = seed_was_fixed
+	c.day = day
+	c.energy = energy
+	c.intellect = intellect
+	c.gloom = gloom
+	c.study_streak = study_streak
+	c.locked = locked
+	c.is_lost = is_lost
+	c.is_won = is_won
+	c.loss_reason = loss_reason
+	c.loss_cause = loss_cause
+	c.checks_passed = checks_passed
+	return c
 
 
 func is_over() -> bool:
@@ -123,7 +144,7 @@ func end_day() -> Dictionary:
 		})
 		if not passed and not is_lost:
 			_lose(LOSS_EVENT % [event.display_name, _stat_name(event.check_stat),
-					event.check_min, actual])
+					event.check_min, actual], String(event.id))
 
 	# 2. Side effects and random-event effects (only if the run survived).
 	if not is_lost:
@@ -140,9 +161,9 @@ func end_day() -> Dictionary:
 	if not is_lost:
 		locked = gloom >= config.gloom_lockout_threshold
 		if intellect <= config.intellect_loss_threshold:
-			_lose(LOSS_INTELLECT % config.intellect_loss_threshold)
+			_lose(LOSS_INTELLECT % config.intellect_loss_threshold, "intellect")
 		elif gloom >= config.gloom_loss_threshold:
-			_lose(LOSS_GLOOM % [gloom, config.gloom_loss_threshold])
+			_lose(LOSS_GLOOM % [gloom, config.gloom_loss_threshold], "gloom")
 
 	# 4. Advance.
 	study_streak = 0
@@ -165,9 +186,10 @@ func _add_stats(intellect_delta: int, gloom_delta: int) -> void:
 	gloom = maxi(gloom + gloom_delta, 0)
 
 
-func _lose(reason: String) -> void:
+func _lose(reason: String, cause: String) -> void:
 	is_lost = true
 	loss_reason = reason
+	loss_cause = cause
 
 
 func _stat_value(stat: EventData.Stat) -> int:

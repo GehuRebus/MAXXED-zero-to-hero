@@ -6,6 +6,8 @@ var screen: MainScreen
 
 func before_each() -> void:
 	screen = (load("res://scenes/main.tscn") as PackedScene).instantiate() as MainScreen
+	screen.config = TestFixtures.rules_config()
+	screen.navigate = false
 	add_child_autofree(screen)
 	_use_schedule({})
 
@@ -261,7 +263,7 @@ func test_restart_rolls_a_new_schedule() -> void:
 
 ## Fresh screen whose config has the given debug seed (set before _ready).
 func _screen_with_seed(seed_value: int) -> MainScreen:
-	var cfg := (load("res://data/GameConfig.tres") as GameConfig).duplicate() as GameConfig
+	var cfg := TestFixtures.rules_config()
 	cfg.debug_seed = seed_value
 	var other := (load("res://scenes/main.tscn") as PackedScene).instantiate() as MainScreen
 	other.config = cfg

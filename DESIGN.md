@@ -22,8 +22,8 @@ Kimmy is a broke and fairly stupid college student. Guide her through 14 days of
 | Stat | Start | Min | Notes |
 |---|---|---|---|
 | Energy | 3 | 0 | Refills to 3 at the start of every day |
-| Intellect | 20 *(placeholder)* | 0 | Clamped at 0. Ending a day at 0 intellect loses the run |
-| Gloom | 20 *(placeholder)* | 0 | Ending a day at 100+ gloom loses the run |
+| Intellect | 20 *(tuned: unchanged)* | 0 | Clamped at 0. Ending a day at 0 intellect loses the run |
+| Gloom | 25 *(tuned, was 20)* | 0 | Ending a day at 100+ gloom loses the run |
 
 - All stat changes are integers. Fractions from multipliers round down.
 - Event checks compare against a stat. They do not spend it.
@@ -49,8 +49,8 @@ All cost 1 energy, and all effects are permanent.
 **Stat checks** (fail = run over):
 | Event | Requirement | Side effect |
 |---|---|---|
-| Exam | Intellect ≥ 50 *(placeholder)* | — |
-| Lab | Intellect ≥ 35 *(placeholder)* | +10 gloom *(placeholder)*, applied after the check |
+| Exam | Intellect ≥ 100 *(tuned, was 50)* | — |
+| Lab | Intellect ≥ 65 *(tuned, was 35)* | +15 gloom *(tuned, was 10)*, applied after the check |
 
 **Random events** (no check, just stat changes):
 | Event | Effect |
@@ -96,14 +96,16 @@ All cost 1 energy, and all effects are permanent.
 - Schedule visibility: the player sees **today plus the next 3 days** (`schedule_lookahead_days`). The intellect bar also marks the next visible check's requirement.
 - Random events are **rolled at run start but hidden**; they show up as a "Surprise!" in the end-of-day popup.
 - Per run: **2 exams, 3 labs** (`count_per_run` on each event) and **3 random events** (`random_event_count`, each drawn evenly from Study Group / Bad News).
-- Placement: **day 14 is always an exam** (`final_day_event`, counts toward the 2); **no checks before day 3** (`first_check_day`); at most **one check per day**. Random events can land on any day, including check days.
+- Placement: **day 14 is always an exam** (`final_day_event`, counts toward the 2); **no checks before day 5** (`first_check_day`; was day 3, moved in milestone 6 tuning, see docs/BALANCE.md); at most **one check per day**. Random events can land on any day, including check days.
 
-**Can wait until tuning:**
-- Starting intellect and gloom values.
-- Exam and lab requirements. With the current cards, net intellect gain while holding gloom steady is small (e.g. Study + Game + Game ≈ +10 intellect, +3 gloom per day), so requirements need to be set against that.
-- Should the Study streak carry across days instead of resetting each day?
+**Decided in milestone 6 tuning** (details and simulator results in `docs/BALANCE.md`):
+- Start intellect 20, start gloom 25. Exam ≥ 100, Lab ≥ 65 with +15 gloom. First check on day 5. Cards and random events unchanged.
+- Result: a planning "good player" bot wins ~72%, a fixed Study/Game/Game routine ~50%, always-Study and random ~0%.
+- The Study streak still resets each day. Tuning reached the target without changing it.
+- Finding: with permanent intellect and fixed requirements, losses cluster in days 5–9 and the late game is low-tension. Fixing that needs a post-MVP rule change (see below).
 
 **Post-MVP design:**
+- Late-game tension: requirement growth, a distinct final exam, gloom drift, or intellect decay (see `docs/BALANCE.md`).
 - Should the player have more stats to care about?
 - Should stats interact more with events?
 

@@ -7,7 +7,7 @@ var config: GameConfig
 
 
 func before_each() -> void:
-	config = load("res://data/GameConfig.tres") as GameConfig
+	config = TestFixtures.rules_config()
 
 
 func _generate(seed_value: int) -> Schedule:
@@ -33,15 +33,6 @@ func _sum_random(counts: Dictionary) -> int:
 	for event: EventData in config.random_events():
 		total += counts.get(event.id, 0)
 	return total
-
-
-func test_config_schedule_values() -> void:
-	assert_eq(config.get_event(&"exam").count_per_run, 2)
-	assert_eq(config.get_event(&"lab").count_per_run, 3)
-	assert_eq(config.random_event_count, 3)
-	assert_eq(config.first_check_day, 3)
-	assert_eq(config.final_day_event, config.get_event(&"exam"))
-	assert_eq(config.schedule_lookahead_days, 3)
 
 
 func test_counts_match_config() -> void:

@@ -1,6 +1,6 @@
 extends GutTest
-## Rules from DESIGN.md, tested against the real GameConfig.tres so the
-## tests follow the data. Stats are set directly where a scenario needs it.
+## Rules from DESIGN.md, tested against TestFixtures.rules_config() (the
+## original DESIGN.md numbers) so retuning GameConfig.tres never breaks them. Stats are set directly where a scenario needs it.
 
 var config: GameConfig
 var run: RunState
@@ -10,7 +10,7 @@ var party: CardData
 
 
 func before_each() -> void:
-	config = load("res://data/GameConfig.tres") as GameConfig
+	config = TestFixtures.rules_config()
 	run = RunState.new(config, Schedule.new())  # empty: tests add events
 	study = config.get_card(&"study")
 	game = config.get_card(&"game")

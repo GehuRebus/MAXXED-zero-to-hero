@@ -1,6 +1,7 @@
 extends GutTest
-## The shipped data files load and hold the DESIGN.md starting values.
-## When tuning changes a number on purpose, update the matching assert.
+## The shipped data files load and hold the current tuned values
+## (milestone 6; see docs/BALANCE.md). When tuning changes a number on
+## purpose, update the matching assert here. Rule tests use TestFixtures.
 
 const CONFIG_PATH := "res://data/GameConfig.tres"
 
@@ -19,12 +20,22 @@ func test_config_values() -> void:
 	assert_eq(config.num_days, 14)
 	assert_eq(config.start_energy, 3)
 	assert_eq(config.start_intellect, 20)
-	assert_eq(config.start_gloom, 20)
+	assert_eq(config.start_gloom, 25)
 	assert_eq(config.gloom_lockout_threshold, 80)
 	assert_eq(config.gloom_loss_threshold, 100)
 	assert_eq(config.intellect_loss_threshold, 0)
 	assert_eq(config.study_streak_percent, [100, 110, 120] as Array[int])
 	assert_gt(config.intellect_display_max, 0)
+	assert_eq(config.debug_seed, -1, "never ship a fixed seed")
+
+
+func test_schedule_values() -> void:
+	assert_eq(config.get_event(&"exam").count_per_run, 2)
+	assert_eq(config.get_event(&"lab").count_per_run, 3)
+	assert_eq(config.random_event_count, 3)
+	assert_eq(config.first_check_day, 5)
+	assert_eq(config.final_day_event, config.get_event(&"exam"))
+	assert_eq(config.schedule_lookahead_days, 3)
 
 
 func test_config_lists_all_content() -> void:
@@ -57,12 +68,12 @@ func test_events() -> void:
 	var exam := config.get_event(&"exam")
 	assert_true(exam.is_check())
 	assert_eq(exam.check_stat, EventData.Stat.INTELLECT)
-	assert_eq([exam.check_min, exam.intellect_delta, exam.gloom_delta], [50, 0, 0])
+	assert_eq([exam.check_min, exam.intellect_delta, exam.gloom_delta], [100, 0, 0])
 
 	var lab := config.get_event(&"lab")
 	assert_true(lab.is_check())
 	assert_eq(lab.check_stat, EventData.Stat.INTELLECT)
-	assert_eq([lab.check_min, lab.intellect_delta, lab.gloom_delta], [35, 0, 10])
+	assert_eq([lab.check_min, lab.intellect_delta, lab.gloom_delta], [65, 0, 15])
 
 	var group := config.get_event(&"study_group")
 	assert_false(group.is_check())
